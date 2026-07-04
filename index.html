@@ -256,11 +256,30 @@
     .carousel-slide img,.carousel-slide video { width:100%; height:100%; object-fit:cover; transition:transform .6s ease; }
     .carousel-slide:hover img,.carousel-slide:hover video { transform:scale(1.06); }
     .slide-overlay {
-      position:absolute; inset:0; background:linear-gradient(to top,rgba(0,0,0,.8) 0%,transparent 60%);
-      opacity:0; transition:opacity var(--transition); display:flex; align-items:flex-end; padding:20px;
+      position:absolute; inset:0; z-index:3;
+      background:linear-gradient(to top, rgba(160,0,0,.88) 0%, rgba(0,0,0,.35) 55%, transparent 100%);
+      display:flex; flex-direction:column; justify-content:flex-end; padding:14px;
+      transition:background var(--transition);
     }
-    .carousel-slide:hover .slide-overlay { opacity:1; }
-    .slide-label { font-size:.8rem; font-weight:600; letter-spacing:1px; }
+    .carousel-slide:hover .slide-overlay { background:linear-gradient(to top,rgba(200,0,0,.95) 0%,rgba(0,0,0,.5) 60%,transparent 100%); }
+    .slide-info { margin-bottom:10px; }
+    .slide-title-text { font-family:var(--font-heading); font-size:1.15rem; letter-spacing:2px; color:#fff; display:block; line-height:1.1; }
+    .slide-type-tag { font-size:.6rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,.7); display:block; margin-top:2px; }
+    .slide-actions { display:flex; gap:7px; align-items:center; }
+    .slide-watch-btn {
+      flex:1; padding:8px 10px; background:rgba(255,255,255,.15); color:#fff;
+      border:1.5px solid rgba(255,255,255,.5); border-radius:3px;
+      font-size:.68rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase;
+      cursor:pointer; transition:background .25s,border-color .25s; backdrop-filter:blur(4px);
+    }
+    .slide-watch-btn:hover { background:rgba(255,255,255,.3); border-color:#fff; }
+    .slide-next-btn {
+      width:34px; height:34px; flex-shrink:0;
+      background:rgba(255,255,255,.15); border:1.5px solid rgba(255,255,255,.4);
+      border-radius:3px; color:#fff; font-size:1rem; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; transition:background .25s;
+    }
+    .slide-next-btn:hover { background:rgba(255,255,255,.3); }
     .slide-badge {
       position:absolute; top:12px; left:12px; z-index:4;
       font-size:.62rem; font-weight:700; letter-spacing:2px; text-transform:uppercase;
@@ -577,6 +596,64 @@
       .about-stats { grid-template-columns:1fr 1fr; }
       .services-grid { grid-template-columns:1fr; }
     }
+
+    /* ============================================================
+       FLOATING ACCESSIBILITY PANEL
+    ============================================================ */
+    .a11y-toggle {
+      position:fixed; bottom:28px; right:28px; z-index:8000;
+      width:52px; height:52px; border-radius:50%;
+      background:var(--red); color:#fff;
+      border:none; cursor:pointer; font-size:1.4rem;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 4px 20px rgba(230,0,0,.45);
+      transition:transform .3s, box-shadow .3s;
+    }
+    .a11y-toggle:hover { transform:scale(1.1); box-shadow:0 6px 30px rgba(230,0,0,.65); }
+    .a11y-toggle.open { transform:rotate(45deg); }
+
+    .a11y-panel {
+      position:fixed; bottom:92px; right:28px; z-index:7999;
+      background:var(--dark); border:1px solid rgba(230,0,0,.25);
+      border-radius:14px; padding:20px 18px; width:210px;
+      box-shadow:0 10px 50px rgba(0,0,0,.6);
+      display:none; flex-direction:column; gap:18px;
+      animation:slideUp .25s ease;
+    }
+    .a11y-panel.open { display:flex; }
+    .a11y-panel-title { font-size:.65rem; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--red); margin-bottom:-6px; }
+    .a11y-section { display:flex; flex-direction:column; gap:7px; }
+    .a11y-label { font-size:.67rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--light); }
+    .a11y-btns { display:flex; gap:5px; flex-wrap:wrap; }
+    .a11y-btn {
+      padding:6px 11px; font-size:.72rem; font-weight:700; letter-spacing:.5px;
+      background:var(--gray); color:var(--light);
+      border:1px solid rgba(255,255,255,.07); border-radius:5px;
+      cursor:pointer; transition:all .25s;
+    }
+    .a11y-btn:hover { border-color:var(--red); color:var(--white); }
+    .a11y-btn.active { background:var(--red); color:#fff; border-color:var(--red); }
+
+    /* Light mode */
+    body.light-mode {
+      --black:#f0f0f0; --dark:#ffffff; --gray:#e2e2e2;
+      --mid:#909090; --light:#444; --white:#111;
+    }
+    body.light-mode nav { background:rgba(240,240,240,.92); }
+    body.light-mode .hero-bg { background:radial-gradient(ellipse 80% 60% at 50% 40%,#ffe0e0 0%,#f0f0f0 70%); }
+
+    /* High contrast */
+    body.high-contrast {
+      --black:#000; --dark:#000; --gray:#111;
+      --mid:#ccc; --light:#fff; --white:#fff; --red:#ff2020;
+    }
+    body.high-contrast * { outline:none; }
+    body.high-contrast a:focus, body.high-contrast button:focus { outline:2px solid #ff2020; }
+
+    /* Font sizes */
+    body.font-small  { font-size:13px; }
+    body.font-normal { font-size:16px; }
+    body.font-large  { font-size:20px; }
   </style>
 </head>
 <body>
@@ -846,8 +923,14 @@
               style="width:100%;height:100%;object-fit:cover;pointer-events:none;"
               onmouseenter="this.play()" onmouseleave="this.pause()"></video>
             <div class="slide-overlay">
-              <i data-lucide="play-circle" style="width:28px;height:28px;stroke:#fff;fill:none;stroke-width:1.5;margin-right:8px;"></i>
-              <span class="slide-label">Intro · 4K</span>
+              <div class="slide-info">
+                <span class="slide-title-text">INTRO</span>
+                <span class="slide-type-tag">YouTube · 4K</span>
+              </div>
+              <div class="slide-actions">
+                <button class="slide-watch-btn" onclick="openWizard(0)">▶ Visualizar</button>
+                <button class="slide-next-btn" onclick="event.stopPropagation();carouselNext()">→</button>
+              </div>
             </div>
           </div>
 
@@ -863,8 +946,14 @@
               style="width:100%;height:100%;object-fit:cover;pointer-events:none;"
               onmouseenter="this.play()" onmouseleave="this.pause()"></video>
             <div class="slide-overlay">
-              <i data-lucide="play-circle" style="width:28px;height:28px;stroke:#fff;fill:none;stroke-width:1.5;margin-right:8px;"></i>
-              <span class="slide-label">Timeline Edit · HD</span>
+              <div class="slide-info">
+                <span class="slide-title-text">TIMELINE EDIT</span>
+                <span class="slide-type-tag">YouTube · HD</span>
+              </div>
+              <div class="slide-actions">
+                <button class="slide-watch-btn" onclick="openWizard(1)">▶ Visualizar</button>
+                <button class="slide-next-btn" onclick="event.stopPropagation();carouselNext()">→</button>
+              </div>
             </div>
           </div>
 
@@ -881,8 +970,14 @@
               style="width:100%;height:100%;object-fit:cover;pointer-events:none;"
               onmouseenter="this.play()" onmouseleave="this.pause()"></video>
             <div class="slide-overlay">
-              <i data-lucide="play-circle" style="width:28px;height:28px;stroke:#fff;fill:none;stroke-width:1.5;margin-right:8px;"></i>
-              <span class="slide-label">ERP Free Promo</span>
+              <div class="slide-info">
+                <span class="slide-title-text">ERP FREE PROMO</span>
+                <span class="slide-type-tag">Reel · Social Media</span>
+              </div>
+              <div class="slide-actions">
+                <button class="slide-watch-btn" onclick="openWizard(2)">▶ Visualizar</button>
+                <button class="slide-next-btn" onclick="event.stopPropagation();carouselNext()">→</button>
+              </div>
             </div>
           </div>
 
@@ -898,8 +993,14 @@
               style="width:100%;height:100%;object-fit:cover;pointer-events:none;"
               onmouseenter="this.play()" onmouseleave="this.pause()"></video>
             <div class="slide-overlay">
-              <i data-lucide="play-circle" style="width:28px;height:28px;stroke:#fff;fill:none;stroke-width:1.5;margin-right:8px;"></i>
-              <span class="slide-label">Quick Drop 2</span>
+              <div class="slide-info">
+                <span class="slide-title-text">QUICK DROP 2</span>
+                <span class="slide-type-tag">Reel · Social Media</span>
+              </div>
+              <div class="slide-actions">
+                <button class="slide-watch-btn" onclick="openWizard(3)">▶ Visualizar</button>
+                <button class="slide-next-btn" onclick="event.stopPropagation();carouselNext()">→</button>
+              </div>
             </div>
           </div>
 
@@ -915,8 +1016,14 @@
               style="width:100%;height:100%;object-fit:cover;pointer-events:none;"
               onmouseenter="this.play()" onmouseleave="this.pause()"></video>
             <div class="slide-overlay">
-              <i data-lucide="play-circle" style="width:28px;height:28px;stroke:#fff;fill:none;stroke-width:1.5;margin-right:8px;"></i>
-              <span class="slide-label">Frases CLJ · 4K</span>
+              <div class="slide-info">
+                <span class="slide-title-text">FRASES CLJ</span>
+                <span class="slide-type-tag">Reel · 4K</span>
+              </div>
+              <div class="slide-actions">
+                <button class="slide-watch-btn" onclick="openWizard(4)">▶ Visualizar</button>
+                <button class="slide-next-btn" onclick="event.stopPropagation();carouselNext()">→</button>
+              </div>
             </div>
           </div>
 
@@ -932,8 +1039,14 @@
               style="width:100%;height:100%;object-fit:cover;pointer-events:none;"
               onmouseenter="this.play()" onmouseleave="this.pause()"></video>
             <div class="slide-overlay">
-              <i data-lucide="play-circle" style="width:28px;height:28px;stroke:#fff;fill:none;stroke-width:1.5;margin-right:8px;"></i>
-              <span class="slide-label">Quick Video 1</span>
+              <div class="slide-info">
+                <span class="slide-title-text">QUICK VIDEO 1</span>
+                <span class="slide-type-tag">Reel · Social Media</span>
+              </div>
+              <div class="slide-actions">
+                <button class="slide-watch-btn" onclick="openWizard(5)">▶ Visualizar</button>
+                <button class="slide-next-btn" onclick="event.stopPropagation();carouselNext()">→</button>
+              </div>
             </div>
           </div>
 
@@ -1053,6 +1166,46 @@
     </div>
     <p class="footer-copy">© 2026 <span>Maxx FPS</span>. Todos los derechos reservados.</p>
   </footer>
+
+  <!-- ============================================================
+       FLOATING ACCESSIBILITY + LANGUAGE PANEL
+  ============================================================ -->
+  <button class="a11y-toggle" id="a11yToggle" onclick="toggleA11yPanel()" aria-label="Accesibilidad">⚙</button>
+  <div class="a11y-panel" id="a11yPanel">
+    <div class="a11y-panel-title">⚙ Configuración</div>
+
+    <div class="a11y-section">
+      <span class="a11y-label">🌐 Idioma / Language</span>
+      <div class="a11y-btns">
+        <button class="a11y-btn active" id="btn-lang-es" onclick="setLang('es')">ES</button>
+        <button class="a11y-btn" id="btn-lang-en" onclick="setLang('en')">EN</button>
+      </div>
+    </div>
+
+    <div class="a11y-section">
+      <span class="a11y-label">🎨 Tema</span>
+      <div class="a11y-btns">
+        <button class="a11y-btn active" id="btn-dark" onclick="setTheme('dark')">🌙 Oscuro</button>
+        <button class="a11y-btn" id="btn-light" onclick="setTheme('light')">☀️ Claro</button>
+      </div>
+    </div>
+
+    <div class="a11y-section">
+      <span class="a11y-label">🔤 Tamaño texto</span>
+      <div class="a11y-btns">
+        <button class="a11y-btn" id="btn-small" onclick="setFontSize('small')">A−</button>
+        <button class="a11y-btn active" id="btn-normal" onclick="setFontSize('normal')">A</button>
+        <button class="a11y-btn" id="btn-large" onclick="setFontSize('large')">A+</button>
+      </div>
+    </div>
+
+    <div class="a11y-section">
+      <span class="a11y-label">👁 Contraste</span>
+      <div class="a11y-btns">
+        <button class="a11y-btn" id="btn-contrast" onclick="toggleContrast()">Alto contraste</button>
+      </div>
+    </div>
+  </div>
 
   <!-- LIGHTBOX simple (fallback) -->
   <div class="lightbox" id="lightbox" onclick="closeLightbox()">
@@ -1376,29 +1529,56 @@
 
     /* ---- CAROUSEL ---- */
     (function () {
-      const track = document.getElementById('carouselTrack');
-      const slides = [...track.querySelectorAll('.carousel-slide')];
-      const dotsC = document.getElementById('carouselDots');
+      const track     = document.getElementById('carouselTrack');
+      const slides    = [...track.querySelectorAll('.carousel-slide')];
+      const dotsC     = document.getElementById('carouselDots');
+      const container = document.querySelector('.carousel-track-container');
       let current = 0;
       function spv() { return window.innerWidth < 700 ? 1 : window.innerWidth < 1000 ? 2 : 3; }
       const maxIdx = () => Math.max(0, slides.length - spv());
+
       for (let i = 0; i <= maxIdx(); i++) {
         const d = document.createElement('button');
         d.className = 'carousel-dot' + (i === 0 ? ' active' : '');
         d.addEventListener('click', () => goTo(i));
         dotsC.appendChild(d);
       }
+
       function goTo(idx) {
-        current = Math.max(0, Math.min(idx, maxIdx()));
+        current = ((idx % (maxIdx() + 1)) + (maxIdx() + 1)) % (maxIdx() + 1);
         const w = slides[0].offsetWidth + 24;
         track.style.transform = `translateX(-${current * w}px)`;
         dotsC.querySelectorAll('.carousel-dot').forEach((d, i) => d.classList.toggle('active', i === current));
       }
+
+      // Expose globally for slide buttons
+      window.carouselNext = () => goTo(current + 1);
+
       document.getElementById('prevBtn').addEventListener('click', () => goTo(current - 1));
       document.getElementById('nextBtn').addEventListener('click', () => goTo(current + 1));
+
+      // Touch swipe
       let sx = 0;
       track.addEventListener('touchstart', e => { sx = e.touches[0].clientX; });
-      track.addEventListener('touchend',   e => { const d = sx - e.changedTouches[0].clientX; if (Math.abs(d) > 50) goTo(d > 0 ? current + 1 : current - 1); });
+      track.addEventListener('touchend',   e => { const d = sx - e.changedTouches[0].clientX; if (Math.abs(d) > 40) goTo(d > 0 ? current + 1 : current - 1); });
+
+      // Mouse wheel horizontal scroll
+      container.addEventListener('wheel', e => {
+        e.preventDefault();
+        const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+        if (delta > 30) goTo(current + 1);
+        else if (delta < -30) goTo(current - 1);
+      }, { passive: false });
+
+      // Auto-advance every 4s, pause on hover
+      let autoTimer = setInterval(() => goTo(current + 1), 4000);
+      const wrapper = document.querySelector('.carousel-wrapper');
+      wrapper.addEventListener('mouseenter', () => clearInterval(autoTimer));
+      wrapper.addEventListener('mouseleave', () => {
+        clearInterval(autoTimer);
+        autoTimer = setInterval(() => goTo(current + 1), 4000);
+      });
+
       window.addEventListener('resize', () => goTo(Math.min(current, maxIdx())));
     })();
 
@@ -1619,6 +1799,161 @@
       if (e.key === 'ArrowRight') wizardNav(1);
       if (e.key === 'ArrowLeft')  wizardNav(-1);
     });
+
+    /* ================================================================
+       ACCESSIBILITY PANEL
+    ================================================================ */
+    function toggleA11yPanel() {
+      const panel  = document.getElementById('a11yPanel');
+      const toggle = document.getElementById('a11yToggle');
+      panel.classList.toggle('open');
+      toggle.classList.toggle('open');
+    }
+    document.addEventListener('click', e => {
+      const panel  = document.getElementById('a11yPanel');
+      const toggle = document.getElementById('a11yToggle');
+      if (!panel.contains(e.target) && e.target !== toggle) {
+        panel.classList.remove('open');
+        toggle.classList.remove('open');
+      }
+    });
+
+    /* ---- THEME ---- */
+    function setTheme(theme) {
+      document.body.classList.toggle('light-mode', theme === 'light');
+      document.getElementById('btn-dark').classList.toggle('active', theme === 'dark');
+      document.getElementById('btn-light').classList.toggle('active', theme === 'light');
+      localStorage.setItem('maxxfps-theme', theme);
+    }
+
+    /* ---- FONT SIZE ---- */
+    function setFontSize(size) {
+      document.body.classList.remove('font-small','font-normal','font-large');
+      document.body.classList.add('font-' + size);
+      ['small','normal','large'].forEach(s =>
+        document.getElementById('btn-' + s).classList.toggle('active', s === size)
+      );
+      localStorage.setItem('maxxfps-font', size);
+    }
+
+    /* ---- HIGH CONTRAST ---- */
+    function toggleContrast() {
+      const on = document.body.classList.toggle('high-contrast');
+      document.getElementById('btn-contrast').classList.toggle('active', on);
+      localStorage.setItem('maxxfps-contrast', on ? '1' : '0');
+    }
+
+    /* ---- LANGUAGE ---- */
+    const i18n = {
+      es: {
+        'html-lang':       'es',
+        'nav-about':       'Sobre Mí',
+        'nav-services':    'Servicios',
+        'nav-portfolio':   'Portafolio',
+        'nav-contact':     'Contacto',
+        'hero-tag':        'Filmmaker · Editor · Diseñador Gráfico',
+        'hero-subtitle':   'Contenido que impacta — Visión que diferencia',
+        'hero-cta-1':      'Ver Portafolio',
+        'hero-cta-2':      'Mis Servicios',
+        'about-label':     'Sobre Mí',
+        'about-p1':        'Soy filmmaker, editor de video y diseñador gráfico especializado en contenido digital que convierte audiencias en comunidades. Trabajo con YouTubers, influencers y marcas para llevar su visión a la pantalla con un estilo cinematográfico único.',
+        'about-p2':        'Mi enfoque combina narrativa visual poderosa con producción técnica precisa: desde el primer frame hasta la miniatura final, cada detalle importa.',
+        'stat-1':          'Proyectos Completados',
+        'stat-2':          'Años de Experiencia',
+        'stat-3':          'Clientes Satisfechos',
+        'stat-4':          'Producción Profesional',
+        'services-label':  'Servicios',
+        'services-title':  'Paquetes & Tarifas',
+        'portfolio-label': 'Portafolio',
+        'portfolio-title': 'Trabajos Recientes',
+        'contact-label':   'Contacto',
+        'contact-h2':      'Trabajemos<br>Juntos',
+        'contact-p':       '¿Tienes un proyecto en mente? Escríbeme y hablemos sobre cómo llevar tu contenido al siguiente nivel.',
+        'footer-tagline':  'Filmmaker · Editor · Diseñador Gráfico',
+        'quote-1':         '"Cada video es una oportunidad de <em>contar algo</em> que el mundo no ha visto antes."',
+        'quote-2':         '"Calidad <em>cinematográfica</em> para contenido que conecta."',
+      },
+      en: {
+        'html-lang':       'en',
+        'nav-about':       'About Me',
+        'nav-services':    'Services',
+        'nav-portfolio':   'Portfolio',
+        'nav-contact':     'Contact',
+        'hero-tag':        'Filmmaker · Editor · Graphic Designer',
+        'hero-subtitle':   'Content that impacts — Vision that differentiates',
+        'hero-cta-1':      'View Portfolio',
+        'hero-cta-2':      'My Services',
+        'about-label':     'About Me',
+        'about-p1':        'I am a filmmaker, video editor and graphic designer specialized in digital content that turns audiences into communities. I work with YouTubers, influencers and brands to bring their vision to the screen with a unique cinematic style.',
+        'about-p2':        'My approach combines powerful visual storytelling with precise technical production: from the first frame to the final thumbnail, every detail matters.',
+        'stat-1':          'Completed Projects',
+        'stat-2':          'Years of Experience',
+        'stat-3':          'Satisfied Clients',
+        'stat-4':          'Professional Production',
+        'services-label':  'Services',
+        'services-title':  'Packages & Rates',
+        'portfolio-label': 'Portfolio',
+        'portfolio-title': 'Recent Work',
+        'contact-label':   'Contact',
+        'contact-h2':      'Let\'s Work<br>Together',
+        'contact-p':       'Have a project in mind? Write to me and let\'s talk about how to take your content to the next level.',
+        'footer-tagline':  'Filmmaker · Editor · Graphic Designer',
+        'quote-1':         '"Every video is an opportunity to <em>tell something</em> the world has never seen before."',
+        'quote-2':         '"<em>Cinematic quality</em> for content that connects."',
+      }
+    };
+
+    const selMap = [
+      ['nav-about',       '.nav-links li:nth-child(1) a'],
+      ['nav-services',    '.nav-links li:nth-child(2) a'],
+      ['nav-portfolio',   '.nav-links li:nth-child(3) a'],
+      ['nav-contact',     '.nav-links li:nth-child(4) a'],
+      ['hero-tag',        '.hero-tag'],
+      ['hero-subtitle',   '.hero-subtitle'],
+      ['hero-cta-1',      '.hero-cta a:nth-child(1)'],
+      ['hero-cta-2',      '.hero-cta a:nth-child(2)'],
+      ['about-label',     '#about .section-label'],
+      ['about-p1',        '#about .about-text p:nth-child(1)'],
+      ['about-p2',        '#about .about-text p:nth-child(2)'],
+      ['stat-1',          '.about-stats .stat-card:nth-child(1) .stat-label'],
+      ['stat-2',          '.about-stats .stat-card:nth-child(2) .stat-label'],
+      ['stat-3',          '.about-stats .stat-card:nth-child(3) .stat-label'],
+      ['stat-4',          '.about-stats .stat-card:nth-child(4) .stat-label'],
+      ['services-label',  '#services .section-label'],
+      ['services-title',  '#services .section-title'],
+      ['portfolio-label', '#portfolio .section-label'],
+      ['portfolio-title', '#portfolio .section-title'],
+      ['contact-label',   '#contact .section-label'],
+      ['contact-h2',      '#contact .section-title'],
+      ['contact-p',       '.contact-info > p'],
+      ['footer-tagline',  '.footer-tagline'],
+      ['quote-1',         '#parallaxBg ~ .parallax-strip-content blockquote'],
+      ['quote-2',         '#parallaxBg2 ~ .parallax-strip-content blockquote'],
+    ];
+
+    function setLang(lang) {
+      const t = i18n[lang];
+      document.documentElement.lang = t['html-lang'];
+      selMap.forEach(([key, sel]) => {
+        const el = document.querySelector(sel);
+        if (el && t[key] !== undefined) el.innerHTML = t[key];
+      });
+      document.getElementById('btn-lang-es').classList.toggle('active', lang === 'es');
+      document.getElementById('btn-lang-en').classList.toggle('active', lang === 'en');
+      localStorage.setItem('maxxfps-lang', lang);
+    }
+
+    /* ---- RESTORE PREFERENCES ---- */
+    (function restorePrefs() {
+      const theme    = localStorage.getItem('maxxfps-theme')    || 'dark';
+      const font     = localStorage.getItem('maxxfps-font')     || 'normal';
+      const contrast = localStorage.getItem('maxxfps-contrast') || '0';
+      const lang     = localStorage.getItem('maxxfps-lang')     || 'es';
+      setTheme(theme);
+      setFontSize(font);
+      if (contrast === '1') toggleContrast();
+      if (lang !== 'es') setLang(lang);
+    })();
   </script>
 </body>
 </html>
