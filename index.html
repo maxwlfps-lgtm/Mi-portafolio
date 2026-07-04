@@ -1,0 +1,1598 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maxx FPS – Filmmaker · Editor · Diseñador</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <style>
+    /* ============================================================
+       VARIABLES
+    ============================================================ */
+    :root {
+      --red:    #e60000;
+      --red-dk: #b00000;
+      --black:  #080808;
+      --dark:   #111111;
+      --gray:   #1c1c1c;
+      --mid:    #444444;
+      --light:  #aaaaaa;
+      --white:  #f5f5f5;
+      --font-heading: 'Bebas Neue', sans-serif;
+      --font-body:    'Inter', sans-serif;
+      --transition: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--black); color: var(--white); font-family: var(--font-body); overflow-x: hidden; }
+    a { text-decoration: none; color: inherit; }
+    img { max-width: 100%; display: block; }
+
+    /* ============================================================
+       NAVBAR
+    ============================================================ */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 6vw; height: 68px;
+      background: rgba(8,8,8,0.88); backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(230,0,0,0.15);
+      transition: background var(--transition);
+    }
+    .logo { font-family: var(--font-heading); font-size: 1.9rem; letter-spacing: 3px; }
+    .logo span { color: var(--red); }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      font-size: 0.78rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--light); transition: color var(--transition); position: relative;
+    }
+    .nav-links a::after {
+      content:''; position:absolute; bottom:-4px; left:0; width:0; height:2px;
+      background:var(--red); transition:width var(--transition);
+    }
+    .nav-links a:hover { color: var(--white); }
+    .nav-links a:hover::after { width: 100%; }
+    .hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; }
+    .hamburger span { width:26px; height:2px; background:var(--white); transition:var(--transition); }
+    .hamburger.open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+    .hamburger.open span:nth-child(2){ opacity:0; }
+    .hamburger.open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+
+    /* ============================================================
+       HERO
+    ============================================================ */
+    #hero {
+      position:relative; height:100vh; min-height:600px;
+      display:flex; align-items:center; justify-content:center; overflow:hidden;
+    }
+    .hero-bg {
+      position:absolute; inset:0; z-index:0;
+      background: radial-gradient(ellipse 80% 60% at 50% 40%, #1a0000 0%, var(--black) 70%);
+    }
+    .hero-bg::after {
+      content:''; position:absolute; inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
+      opacity:0.4; pointer-events:none;
+    }
+    #particles-canvas { position:absolute; inset:0; z-index:1; pointer-events:none; }
+    .scanline {
+      position:absolute; inset:0; z-index:2; pointer-events:none;
+      background: repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(230,0,0,.015) 3px,rgba(230,0,0,.015) 4px);
+    }
+    .hero-content { position:relative; z-index:10; text-align:center; padding:0 6vw; }
+    .hero-tag {
+      display:inline-block; font-size:.72rem; letter-spacing:5px; text-transform:uppercase;
+      color:var(--red); border:1px solid var(--red); padding:6px 18px; margin-bottom:28px;
+      animation:fadeUp .8s .2s both;
+    }
+    .hero-title {
+      font-family:var(--font-heading); font-size:clamp(4.5rem,14vw,12rem);
+      line-height:.9; letter-spacing:4px; animation:fadeUp .9s .4s both;
+    }
+    .hero-title .red { color:var(--red); }
+    .hero-subtitle {
+      font-size:clamp(.85rem,2vw,1.05rem); letter-spacing:4px; text-transform:uppercase;
+      color:var(--light); margin-top:22px; animation:fadeUp .9s .6s both;
+    }
+    .hero-cta { display:flex; gap:1rem; justify-content:center; margin-top:48px; animation:fadeUp .9s .8s both; }
+    .btn {
+      display:inline-flex; align-items:center; gap:8px; padding:14px 34px;
+      font-size:.78rem; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+      border-radius:2px; cursor:pointer; transition:var(--transition); border:2px solid transparent;
+    }
+    .btn-primary { background:var(--red); color:var(--white); border-color:var(--red); }
+    .btn-primary:hover { background:var(--red-dk); border-color:var(--red-dk); transform:translateY(-2px); }
+    .btn-outline { background:transparent; color:var(--white); border-color:rgba(255,255,255,.3); }
+    .btn-outline:hover { border-color:var(--white); transform:translateY(-2px); }
+    .scroll-hint { position:absolute; bottom:40px; left:50%; transform:translateX(-50%); z-index:10; animation:bounce 2s infinite; }
+    .scroll-hint span { display:block; width:1px; height:60px; background:linear-gradient(to bottom,transparent,var(--red)); margin:0 auto; }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes bounce {
+      0%,100%{transform:translateX(-50%) translateY(0)}
+      50%{transform:translateX(-50%) translateY(10px)}
+    }
+
+    /* ============================================================
+       SECTIONS BASE
+    ============================================================ */
+    section { padding:110px 8vw; }
+    .section-label { font-size:.72rem; letter-spacing:5px; text-transform:uppercase; color:var(--red); margin-bottom:14px; }
+    .section-title { font-family:var(--font-heading); font-size:clamp(2.8rem,7vw,5.5rem); line-height:1; letter-spacing:2px; }
+    .section-divider { width:60px; height:3px; background:var(--red); margin:24px 0 48px; }
+    .reveal { opacity:0; transform:translateY(40px); transition:opacity .7s ease,transform .7s ease; }
+    .reveal.visible { opacity:1; transform:none; }
+
+    /* ============================================================
+       MARQUEE
+    ============================================================ */
+    .marquee-section { background:var(--red); padding:18px 0; overflow:hidden; }
+    .marquee-track { display:flex; gap:3rem; animation:marquee 22s linear infinite; white-space:nowrap; }
+    .marquee-track span { font-family:var(--font-heading); font-size:1.4rem; letter-spacing:4px; text-transform:uppercase; }
+    .marquee-track .dot { color:rgba(255,255,255,.4); }
+    @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+    /* ============================================================
+       ABOUT
+    ============================================================ */
+    #about { background:var(--dark); display:grid; grid-template-columns:1fr 1fr; gap:6rem; align-items:center; }
+    .about-img-wrap { position:relative; overflow:hidden; border-radius:2px; }
+    .about-img-wrap img { width:100%; height:520px; object-fit:cover; filter:grayscale(20%); transition:transform .6s ease; }
+    .about-img-wrap:hover img { transform:scale(1.04); }
+    .about-img-wrap::after {
+      content:''; position:absolute; inset:0; border:2px solid var(--red);
+      transform:translate(12px,12px); pointer-events:none; z-index:-1;
+    }
+    .about-placeholder {
+      width:100%; height:520px; background:var(--gray); display:flex;
+      flex-direction:column; align-items:center; justify-content:center; gap:12px;
+      color:var(--mid); font-size:.85rem; letter-spacing:2px; text-transform:uppercase; border-radius:2px;
+    }
+    .about-placeholder svg { opacity:.3; }
+    .about-stats { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-top:3rem; }
+    .stat-card { background:var(--gray); padding:22px 20px; border-left:3px solid var(--red); }
+    .stat-num { font-family:var(--font-heading); font-size:2.4rem; color:var(--red); }
+    .stat-label { font-size:.78rem; color:var(--light); letter-spacing:1px; margin-top:4px; }
+    .about-text p { color:var(--light); line-height:1.9; font-size:.98rem; margin-bottom:1.2rem; }
+
+    /* ============================================================
+       SERVICES / PAQUETES
+    ============================================================ */
+    #services { background:var(--black); text-align:center; }
+    #services .section-divider { margin-left:auto; margin-right:auto; }
+    .services-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:2rem; margin-top:3rem; }
+    .service-card {
+      background:var(--dark); border:1px solid rgba(255,255,255,.06); border-radius:4px;
+      padding:0; overflow:hidden; transition:transform var(--transition),border-color var(--transition),box-shadow var(--transition);
+      display:flex; flex-direction:column;
+    }
+    .service-card:hover { transform:translateY(-8px); border-color:var(--red); box-shadow:0 20px 60px rgba(230,0,0,.15); }
+    .service-card.featured { border-color:var(--red); position:relative; }
+    .badge-featured {
+      position:absolute; top:20px; right:20px; background:var(--red);
+      font-size:.65rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; padding:4px 12px; border-radius:2px;
+    }
+    .card-header { background:var(--gray); padding:36px 32px 28px; text-align:left; }
+    .card-icon { font-size:2.2rem; margin-bottom:14px; }
+    .card-title { font-family:var(--font-heading); font-size:1.8rem; letter-spacing:2px; margin-bottom:8px; }
+    .card-subtitle { font-size:.8rem; color:var(--light); letter-spacing:1px; }
+    .card-body { padding:28px 32px 32px; flex:1; display:flex; flex-direction:column; gap:1rem; }
+
+    /* Price tier with its own button */
+    .price-tier {
+      background:var(--gray); border-radius:3px; border-left:3px solid transparent;
+      transition:border-color var(--transition); overflow:hidden;
+    }
+    .price-tier:hover { border-left-color:var(--red); }
+    .tier-info { padding:16px 18px 14px; text-align:left; }
+    .tier-name { font-size:.72rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--light); margin-bottom:6px; }
+    /* ✏️ EDITAR PRECIO — cambia el número dentro de .tier-price */
+    .tier-price { font-family:var(--font-heading); font-size:2rem; color:var(--white); line-height:1; }
+    .tier-price sup { font-size:1rem; vertical-align:super; }
+    .tier-price small { font-family:var(--font-body); font-size:.75rem; color:var(--light); }
+    .tier-includes { font-size:.78rem; color:var(--light); margin-top:6px; line-height:1.6; }
+    /* Individual hire button per tier */
+    .tier-btn {
+      display:block; width:100%; padding:11px 16px; text-align:center;
+      font-size:.72rem; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+      background:transparent; color:var(--red); border:none; border-top:1px solid rgba(255,255,255,.06);
+      cursor:pointer; transition:var(--transition);
+    }
+    .tier-btn:hover { background:var(--red); color:var(--white); }
+
+    .feature-list { list-style:none; margin-top:.5rem; }
+    .feature-list li {
+      display:flex; align-items:flex-start; gap:10px;
+      font-size:.85rem; color:var(--light); padding:8px 0;
+      border-bottom:1px solid rgba(255,255,255,.05);
+    }
+    .feature-list li::before { content:'▸'; color:var(--red); flex-shrink:0; margin-top:1px; }
+
+    /* event card cta */
+    .card-cta {
+      display:block; width:100%; padding:14px; text-align:center;
+      font-size:.78rem; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+      border-radius:2px; margin-top:auto; cursor:pointer; transition:var(--transition);
+      background:var(--red); color:var(--white); border:2px solid var(--red);
+    }
+    .card-cta:hover { background:var(--red-dk); border-color:var(--red-dk); }
+    .card-cta.outline { background:transparent; color:var(--white); border-color:rgba(255,255,255,.2); }
+    .card-cta.outline:hover { border-color:var(--white); background:rgba(255,255,255,.05); }
+
+    /* ============================================================
+       PORTFOLIO CAROUSEL
+    ============================================================ */
+    #portfolio { background:var(--dark); overflow:hidden; }
+    .carousel-wrapper { position:relative; margin-top:3rem; }
+    .carousel-track-container { overflow:hidden; border-radius:4px; }
+    .carousel-track { display:flex; gap:1.5rem; transition:transform .6s cubic-bezier(.25,.8,.25,1); }
+    .carousel-slide {
+      min-width:calc(33.333% - 1rem); flex-shrink:0; position:relative;
+      overflow:hidden; border-radius:3px; aspect-ratio:16/9; background:var(--gray); cursor:pointer;
+    }
+    .carousel-slide img,.carousel-slide video { width:100%; height:100%; object-fit:cover; transition:transform .6s ease; }
+    .carousel-slide:hover img,.carousel-slide:hover video { transform:scale(1.06); }
+    .slide-overlay {
+      position:absolute; inset:0; background:linear-gradient(to top,rgba(0,0,0,.8) 0%,transparent 60%);
+      opacity:0; transition:opacity var(--transition); display:flex; align-items:flex-end; padding:20px;
+    }
+    .carousel-slide:hover .slide-overlay { opacity:1; }
+    .slide-label { font-size:.8rem; font-weight:600; letter-spacing:1px; }
+    .slide-badge {
+      position:absolute; top:12px; left:12px; z-index:4;
+      font-size:.62rem; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+      padding:4px 10px; border-radius:2px; display:flex; align-items:center; gap:5px;
+    }
+    .slide-badge.yt  { background:rgba(255,0,0,.85); color:#fff; }
+    .slide-badge.reel{ background:rgba(0,0,0,.7); color:#fff; border:1px solid rgba(255,255,255,.3); }
+    .slide-badge svg { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2; }
+    .slide-placeholder {
+      width:100%; height:100%; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:10px; color:var(--mid);
+      font-size:.8rem; letter-spacing:2px; text-transform:uppercase;
+    }
+    .slide-placeholder svg { opacity:.3; }
+    .carousel-nav { display:flex; align-items:center; justify-content:center; gap:1rem; margin-top:2rem; }
+    .carousel-btn {
+      width:48px; height:48px; border-radius:50%; border:2px solid rgba(255,255,255,.15);
+      background:transparent; color:var(--white); cursor:pointer;
+      display:flex; align-items:center; justify-content:center; transition:var(--transition); font-size:1.2rem;
+    }
+    .carousel-btn:hover { border-color:var(--red); color:var(--red); }
+    .carousel-dots { display:flex; gap:8px; }
+    .carousel-dot { width:8px; height:8px; border-radius:50%; background:var(--mid); border:none; cursor:pointer; transition:var(--transition); }
+    .carousel-dot.active { background:var(--red); transform:scale(1.3); }
+
+    /* ============================================================
+       PARALLAX STRIP
+    ============================================================ */
+    .parallax-strip { position:relative; height:380px; overflow:hidden; }
+    .parallax-strip-bg {
+      position:absolute; inset:-80px 0;
+      background:url('https://images.unsplash.com/photo-1598387846148-47e82ee120cc?w=1600&q=80') center/cover no-repeat;
+      filter:grayscale(60%) brightness(.3); will-change:transform;
+    }
+    .parallax-strip-content {
+      position:relative; z-index:2; height:100%;
+      display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:0 8vw;
+    }
+    .parallax-strip-content blockquote { font-family:var(--font-heading); font-size:clamp(2rem,5vw,4rem); letter-spacing:3px; line-height:1.1; max-width:900px; }
+    .parallax-strip-content blockquote em { color:var(--red); font-style:normal; }
+
+    /* ============================================================
+       CONTACT
+    ============================================================ */
+    #contact { background:var(--black); display:grid; grid-template-columns:1fr 1.2fr; gap:6rem; align-items:start; }
+    .contact-info p { color:var(--light); line-height:1.9; font-size:.96rem; margin-bottom:2.5rem; }
+    .contact-links { display:flex; flex-direction:column; gap:1rem; }
+    .contact-link { display:flex; align-items:center; gap:14px; font-size:.9rem; color:var(--light); transition:color var(--transition); }
+    .contact-link:hover { color:var(--red); }
+    .contact-link-icon { width:42px; height:42px; background:var(--gray); display:flex; align-items:center; justify-content:center; border-radius:50%; flex-shrink:0; transition:background var(--transition); }
+    .contact-link-icon svg { width:18px; height:18px; stroke:var(--white); stroke-width:1.8; transition:stroke var(--transition); }
+    .contact-link:hover .contact-link-icon { background:var(--red); }
+
+    /* Lucide icons general */
+    .lucide { width:20px; height:20px; stroke:currentColor; stroke-width:1.8; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+    .card-icon-lucide { width:36px; height:36px; stroke:var(--red); stroke-width:1.6; fill:none; stroke-linecap:round; stroke-linejoin:round; margin-bottom:14px; }
+    .nav-icon { width:16px; height:16px; stroke:currentColor; stroke-width:2; fill:none; }
+    .contact-form { display:flex; flex-direction:column; gap:1.2rem; }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
+    .form-group { display:flex; flex-direction:column; gap:8px; }
+    .form-group label { font-size:.72rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--light); }
+    .form-group input,.form-group select,.form-group textarea {
+      background:var(--dark); border:1px solid rgba(255,255,255,.1); border-radius:2px;
+      padding:13px 16px; color:var(--white); font-family:var(--font-body); font-size:.9rem; outline:none; transition:border-color var(--transition);
+    }
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus { border-color:var(--red); }
+    .form-group textarea { resize:vertical; min-height:130px; }
+    .form-group select option { background:var(--dark); }
+
+    /* ============================================================
+       FOOTER
+    ============================================================ */
+    footer {
+      background:var(--dark); border-top:1px solid rgba(230,0,0,.2);
+      padding:48px 8vw 36px; display:flex; flex-direction:column; align-items:center; gap:24px; text-align:center;
+    }
+    .footer-logo { font-family:var(--font-heading); font-size:2.6rem; letter-spacing:6px; }
+    .footer-logo span { color:var(--red); }
+    .footer-tagline { font-size:.75rem; letter-spacing:3px; text-transform:uppercase; color:var(--mid); }
+    .footer-links { display:flex; gap:2rem; list-style:none; }
+    .footer-links a { font-size:.78rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--mid); transition:color var(--transition); }
+    .footer-links a:hover { color:var(--red); }
+    .footer-copy { font-size:.75rem; color:var(--mid); }
+    .footer-copy span { color:var(--red); }
+
+    /* ============================================================
+       LOGO NAVBAR
+    ============================================================ */
+    .logo-img {
+      height: 44px;
+      width: auto;
+      filter: invert(1);          /* negro→blanco sobre fondo oscuro */
+      mix-blend-mode: screen;     /* fondo blanco→transparente        */
+      object-fit: contain;
+      transition: opacity var(--transition);
+    }
+    .logo-img:hover { opacity: .85; }
+    /* Fallback text si no carga la imagen */
+    .logo-text { font-family:var(--font-heading); font-size:1.9rem; letter-spacing:3px; }
+    .logo-text span { color:var(--red); }
+
+    /* ============================================================
+       LOGO FOOTER (grande)
+    ============================================================ */
+    .footer-logo-img {
+      height: 90px; width: auto;
+      filter: invert(1); mix-blend-mode: screen;
+      object-fit: contain;
+    }
+
+    /* ============================================================
+       ABOUT — fallback si no carga la foto
+    ============================================================ */
+    .about-img-wrap .photo-fallback {
+      display: none;
+      width: 100%; height: 520px;
+      background: var(--gray);
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 12px; color: var(--mid); font-size: .85rem;
+      letter-spacing: 2px; text-transform: uppercase; border-radius: 2px;
+    }
+    .about-img-wrap img.broken + .photo-fallback { display: flex; }
+
+    /* ============================================================
+       WIZARD LIGHTBOX
+    ============================================================ */
+    #wizard {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,.96); backdrop-filter: blur(10px);
+      flex-direction: column; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    #wizard.open { display: flex; }
+
+    .wizard-header {
+      width: 100%; max-width: 960px;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px; gap: 12px;
+    }
+    .wizard-meta { display: flex; align-items: center; gap: 10px; }
+    .wizard-badge {
+      font-size: .62rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+      padding: 4px 12px; border-radius: 2px;
+    }
+    .wizard-badge.yt   { background: var(--red); color: #fff; }
+    .wizard-badge.reel { background: #222; color: #fff; border: 1px solid rgba(255,255,255,.2); }
+    .wizard-badge.bts  { background: #333; color: #aaa; border: 1px solid rgba(255,255,255,.1); }
+    #wizardTitle { font-family: var(--font-heading); font-size: 1.4rem; letter-spacing: 2px; }
+    #wizardCounter { font-size: .75rem; color: var(--mid); margin-left: auto; white-space: nowrap; }
+    .wizard-close-btn {
+      width: 38px; height: 38px; flex-shrink: 0;
+      background: rgba(255,255,255,.08); border: none; border-radius: 50%;
+      color: var(--white); font-size: 1.1rem; cursor: pointer; display: flex;
+      align-items: center; justify-content: center; transition: background var(--transition);
+    }
+    .wizard-close-btn:hover { background: var(--red); }
+
+    .wizard-stage {
+      width: 100%; max-width: 960px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .wizard-nav-btn {
+      width: 52px; height: 52px; flex-shrink: 0;
+      background: rgba(255,255,255,.08); border: 2px solid rgba(255,255,255,.12);
+      border-radius: 50%; color: var(--white); font-size: 1.4rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: var(--transition);
+    }
+    .wizard-nav-btn:hover { background: var(--red); border-color: var(--red); }
+    #wizardMedia { flex: 1; min-height: 200px; display: flex; align-items: center; justify-content: center; }
+
+    .wizard-footer {
+      margin-top: 18px; display: flex; align-items: center; gap: 8px;
+    }
+    .wizard-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--mid); border: none; cursor: pointer; transition: var(--transition);
+    }
+    .wizard-dot.active { background: var(--red); transform: scale(1.4); }
+
+    /* ============================================================
+       LIGHTBOX (fallback simple para imágenes individuales)
+    ============================================================ */
+    .lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,.95); z-index:9998; align-items:center; justify-content:center; }
+    .lightbox.open { display:flex; }
+    .lightbox-inner { position:relative; max-width:90vw; max-height:90vh; }
+    .lightbox-inner img { max-height:90vh; border-radius:2px; }
+    .lightbox-close { position:fixed; top:24px; right:32px; font-size:2rem; color:var(--white); cursor:pointer; transition:color var(--transition); }
+    .lightbox-close:hover { color:var(--red); }
+
+    /* ============================================================
+       HIRE MODAL
+    ============================================================ */
+    .modal-overlay {
+      display:none; position:fixed; inset:0; z-index:9000;
+      background:rgba(0,0,0,.85); backdrop-filter:blur(8px);
+      align-items:center; justify-content:center; padding:20px;
+      animation:fadeIn .25s ease;
+    }
+    .modal-overlay.open { display:flex; }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+    .modal {
+      background:var(--dark); border:1px solid rgba(230,0,0,.3); border-radius:6px;
+      width:100%; max-width:760px; max-height:90vh; overflow-y:auto;
+      position:relative; animation:slideUp .3s ease;
+    }
+    @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:none} }
+
+    .modal-header {
+      background:var(--gray); padding:28px 36px 24px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      display:flex; align-items:flex-start; justify-content:space-between; gap:16px;
+      position:sticky; top:0; z-index:2;
+    }
+    .modal-plan-tag {
+      display:inline-block; background:var(--red); font-size:.65rem; font-weight:700;
+      letter-spacing:2px; text-transform:uppercase; padding:4px 12px; border-radius:2px; margin-bottom:10px;
+    }
+    .modal-title { font-family:var(--font-heading); font-size:1.7rem; letter-spacing:2px; line-height:1; }
+    .modal-subtitle { font-size:.82rem; color:var(--light); margin-top:6px; }
+    .modal-close {
+      width:36px; height:36px; flex-shrink:0; background:rgba(255,255,255,.08); border:none;
+      border-radius:50%; color:var(--white); font-size:1.2rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+      transition:background var(--transition);
+    }
+    .modal-close:hover { background:var(--red); }
+
+    .modal-body { padding:32px 36px 36px; display:flex; flex-direction:column; gap:1.4rem; }
+
+    /* Section dividers inside modal */
+    .modal-section-label {
+      font-size:.68rem; font-weight:700; letter-spacing:3px; text-transform:uppercase;
+      color:var(--red); padding-bottom:10px; border-bottom:1px solid rgba(230,0,0,.2);
+      margin-top:.6rem;
+    }
+
+    /* Form fields inside modal */
+    .modal .form-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    .modal .form-group { display:flex; flex-direction:column; gap:7px; }
+    .modal .form-group label { font-size:.68rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--light); }
+    .modal .form-group input,
+    .modal .form-group select,
+    .modal .form-group textarea {
+      background:var(--black); border:1px solid rgba(255,255,255,.1); border-radius:3px;
+      padding:11px 14px; color:var(--white); font-family:var(--font-body); font-size:.88rem; outline:none;
+      transition:border-color var(--transition);
+    }
+    .modal .form-group input:focus,
+    .modal .form-group select:focus,
+    .modal .form-group textarea:focus { border-color:var(--red); box-shadow:0 0 0 2px rgba(230,0,0,.1); }
+    .modal .form-group textarea { resize:vertical; min-height:100px; }
+    .modal .form-group select option { background:var(--black); }
+
+    /* Payment box */
+    .payment-box {
+      background:rgba(230,0,0,.07); border:1px solid rgba(230,0,0,.2); border-radius:4px;
+      padding:18px 20px; display:flex; align-items:center; gap:14px;
+    }
+    .payment-icon { font-size:2rem; flex-shrink:0; }
+    .payment-info { font-size:.82rem; color:var(--light); line-height:1.6; }
+    .payment-info strong { color:var(--white); display:block; margin-bottom:3px; }
+    .paypal-id { font-size:.85rem; color:var(--red); font-weight:600; letter-spacing:1px; }
+
+    /* Submit area */
+    .modal-submit-area { display:flex; flex-direction:column; gap:.8rem; margin-top:.5rem; }
+    .modal-submit-btn {
+      width:100%; padding:15px; font-family:var(--font-body); font-size:.82rem; font-weight:700;
+      letter-spacing:2px; text-transform:uppercase; background:var(--red); color:var(--white);
+      border:none; border-radius:3px; cursor:pointer; transition:var(--transition);
+    }
+    .modal-submit-btn:hover { background:var(--red-dk); }
+    .modal-submit-btn:disabled { opacity:.5; cursor:not-allowed; }
+    .modal-privacy {
+      font-size:.72rem; color:var(--mid); text-align:center; line-height:1.6;
+    }
+
+    /* Success screen */
+    .modal-success {
+      display:none; flex-direction:column; align-items:center; justify-content:center;
+      text-align:center; padding:60px 36px; gap:1.2rem;
+    }
+    .modal-success.show { display:flex; }
+    .success-icon { font-size:3.5rem; animation:popIn .5s ease; }
+    @keyframes popIn { 0%{transform:scale(0)} 70%{transform:scale(1.2)} 100%{transform:scale(1)} }
+    .success-title { font-family:var(--font-heading); font-size:2.2rem; letter-spacing:2px; color:var(--red); }
+    .success-msg { font-size:.9rem; color:var(--light); line-height:1.8; max-width:460px; }
+    .success-close-btn {
+      padding:12px 36px; font-size:.78rem; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+      background:var(--red); color:var(--white); border:none; border-radius:2px; cursor:pointer; transition:var(--transition);
+    }
+    .success-close-btn:hover { background:var(--red-dk); }
+
+    /* ============================================================
+       MOBILE
+    ============================================================ */
+    @media (max-width:900px) {
+      #about { grid-template-columns:1fr; gap:3rem; }
+      #contact { grid-template-columns:1fr; gap:3rem; }
+      .about-img-wrap img,.about-placeholder { height:320px; }
+      .carousel-slide { min-width:calc(80% - .5rem); }
+      .form-row { grid-template-columns:1fr; }
+      .nav-links { display:none; flex-direction:column; position:absolute; top:68px; left:0; right:0; background:var(--dark); padding:2rem; gap:1.5rem; }
+      .nav-links.open { display:flex; }
+      .hamburger { display:flex; }
+      .modal { max-height:96vh; }
+      .modal-header { padding:22px 22px 18px; }
+      .modal-body { padding:22px 22px 28px; }
+      .modal .form-row { grid-template-columns:1fr; }
+    }
+    @media (max-width:600px) {
+      section { padding:80px 6vw; }
+      .hero-cta { flex-direction:column; align-items:center; }
+      .about-stats { grid-template-columns:1fr 1fr; }
+      .services-grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav id="navbar">
+    <a href="#hero" class="logo" style="display:flex;align-items:center;gap:8px;">
+      <!-- ✏️ LOGO: coloca tu PNG en Portafolios/images/logow.png (fondo transparente) -->
+      <img src="images/logow.png" alt="Maxx FPS"
+           style="height:42px;width:auto;object-fit:contain;"
+           onerror="this.style.display='none';" />
+      <span style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:3px;">MAXX <span style="color:var(--red);">FPS</span></span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#about">Sobre Mí</a></li>
+      <li><a href="#services">Servicios</a></li>
+      <li><a href="#portfolio">Portafolio</a></li>
+      <li><a href="#contact">Contacto</a></li>
+    </ul>
+    <div class="hamburger" id="hamburger">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-bg"></div>
+    <canvas id="particles-canvas"></canvas>
+    <div class="scanline"></div>
+    <div class="hero-content">
+      <div class="hero-tag">Filmmaker · Editor · Diseñador Gráfico</div>
+      <h1 class="hero-title">MAXX<br><span class="red">FPS</span></h1>
+      <p class="hero-subtitle">Contenido que impacta — Visión que diferencia</p>
+      <div class="hero-cta">
+        <a href="#portfolio" class="btn btn-primary">Ver Portafolio</a>
+        <a href="#services"  class="btn btn-outline">Mis Servicios</a>
+      </div>
+    </div>
+    <div class="scroll-hint"><span></span></div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee-section" aria-hidden="true">
+    <div class="marquee-track">
+      <span>Edición</span><span class="dot">•</span>
+      <span>Filmmaking</span><span class="dot">•</span>
+      <span>Diseño Gráfico</span><span class="dot">•</span>
+      <span>YouTube</span><span class="dot">•</span>
+      <span>Reels</span><span class="dot">•</span>
+      <span>Cobertura de Eventos</span><span class="dot">•</span>
+      <span>Branding Visual</span><span class="dot">•</span>
+      <span>Social Media</span><span class="dot">•</span>
+      <span>Edición</span><span class="dot">•</span>
+      <span>Filmmaking</span><span class="dot">•</span>
+      <span>Diseño Gráfico</span><span class="dot">•</span>
+      <span>YouTube</span><span class="dot">•</span>
+      <span>Reels</span><span class="dot">•</span>
+      <span>Cobertura de Eventos</span><span class="dot">•</span>
+      <span>Branding Visual</span><span class="dot">•</span>
+      <span>Social Media</span><span class="dot">•</span>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="about-img-wrap reveal">
+      <img src="images/maxwel.jpeg" alt="Maxx FPS – Filmmaker"
+           style="width:100%;height:520px;object-fit:cover;object-position:center top;filter:grayscale(10%);transition:transform .6s ease;"
+           onerror="this.classList.add('broken');" />
+      <div class="photo-fallback">
+        <svg width="56" height="56" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2">
+          <path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+        </svg>
+        <span>Copia tu foto aquí</span>
+        <span style="font-size:.65rem;opacity:.5;">images/maxx-perfil.jpg</span>
+      </div>
+    </div>
+    <div class="reveal">
+      <p class="section-label">Sobre Mí</p>
+      <h2 class="section-title">Maxx FPS</h2>
+      <div class="section-divider"></div>
+      <div class="about-text">
+        <!-- ✏️ CAMBIA ESTE TEXTO -->
+        <p>Soy filmmaker, editor de video y diseñador gráfico especializado en contenido digital que convierte audiencias en comunidades. Trabajo con YouTubers, influencers y marcas para llevar su visión a la pantalla con un estilo cinematográfico único.</p>
+        <p>Mi enfoque combina narrativa visual poderosa con producción técnica precisa: desde el primer frame hasta la miniatura final, cada detalle importa.</p>
+      </div>
+      <!-- ✏️ CAMBIA NÚMEROS -->
+      <div class="about-stats">
+        <div class="stat-card"><div class="stat-num">+50</div><div class="stat-label">Proyectos Completados</div></div>
+        <div class="stat-card"><div class="stat-num">+5</div><div class="stat-label">Años de Experiencia</div></div>
+        <div class="stat-card"><div class="stat-num">+20</div><div class="stat-label">Clientes Satisfechos</div></div>
+        <div class="stat-card"><div class="stat-num">4K</div><div class="stat-label">Producción Profesional</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PARALLAX 1 -->
+  <div class="parallax-strip">
+    <div class="parallax-strip-bg" id="parallaxBg"></div>
+    <div class="parallax-strip-content">
+      <blockquote class="reveal">"Cada video es una oportunidad de <em>contar algo</em> que el mundo no ha visto antes."</blockquote>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SERVICES
+  ============================================================ -->
+  <section id="services">
+    <p class="section-label reveal">Servicios</p>
+    <h2 class="section-title reveal">Paquetes &amp; Tarifas</h2>
+    <div class="section-divider reveal" style="margin-left:auto;margin-right:auto;"></div>
+
+    <div class="services-grid">
+
+      <!-- PAQUETE YOUTUBER -->
+      <div class="service-card reveal">
+        <div class="card-header">
+          <svg class="card-icon-lucide" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
+          <h3 class="card-title">Youtuber</h3>
+          <p class="card-subtitle">Gestión completa de canal</p>
+        </div>
+        <div class="card-body">
+
+          <!-- TIER: DESPEGUE -->
+          <div class="price-tier">
+            <div class="tier-info">
+              <div class="tier-name">Plan Despegue</div>
+              <!-- ✏️ PRECIO -->
+              <div class="tier-price"><sup>$</sup>80 <small>/ mes</small></div>
+              <!-- ✏️ DESCRIPCIÓN -->
+              <div class="tier-includes">4 videos editados · 1 Reel por video · Diseño de miniaturas</div>
+            </div>
+            <!-- Botón individual por tier -->
+            <button class="tier-btn"
+              onclick="openHireModal('Youtuber – Plan Despegue', '$80 / mes', '4 videos editados · 1 Reel por video · Diseño de miniaturas')">
+              Contratar este plan →
+            </button>
+          </div>
+
+          <!-- TIER: PRO -->
+          <div class="price-tier">
+            <div class="tier-info">
+              <div class="tier-name">Plan Pro</div>
+              <!-- ✏️ PRECIO -->
+              <div class="tier-price"><sup>$</sup>120 <small>/ mes</small></div>
+              <!-- ✏️ DESCRIPCIÓN -->
+              <div class="tier-includes">4 videos editados · 2 Reels por video · Diseño de miniaturas</div>
+            </div>
+            <button class="tier-btn"
+              onclick="openHireModal('Youtuber – Plan Pro', '$120 / mes', '4 videos editados · 2 Reels por video · Diseño de miniaturas')">
+              Contratar este plan →
+            </button>
+          </div>
+
+          <ul class="feature-list" style="margin-top:.5rem;">
+            <li>Edición profesional con color grading</li>
+            <li>Miniaturas optimizadas para CTR</li>
+            <li>Reels verticales para Shorts / Stories</li>
+            <li>Correcciones incluidas</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- PAQUETE SOCIAL MEDIA -->
+      <div class="service-card featured reveal">
+        <div class="badge-featured">Popular</div>
+        <div class="card-header">
+          <svg class="card-icon-lucide" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          <h3 class="card-title">Social Media</h3>
+          <p class="card-subtitle">Influencers &amp; Marcas</p>
+        </div>
+        <div class="card-body">
+
+          <!-- TIER: REEL INDIVIDUAL -->
+          <div class="price-tier">
+            <div class="tier-info">
+              <div class="tier-name">Reel Individual</div>
+              <!-- ✏️ PRECIO -->
+              <div class="tier-price"><sup>$</sup>15.59 <small>/ reel</small></div>
+              <div class="tier-includes">Edición completa · Música · Subtítulos · Efectos</div>
+            </div>
+            <button class="tier-btn"
+              onclick="openHireModal('Social Media – Reel Individual', '$15.59 / reel', 'Edición completa · Música · Subtítulos · Efectos')">
+              Contratar este plan →
+            </button>
+          </div>
+
+          <!-- TIER: PACK SEMANAL -->
+          <div class="price-tier">
+            <div class="tier-info">
+              <div class="tier-name">Pack Semanal · 3 Reels</div>
+              <!-- ✏️ PRECIO -->
+              <div class="tier-price"><sup>$</sup>11.85 <small>/ reel</small></div>
+              <div class="tier-includes">3 Reels/semana · ~$35.55/sem · Ahorra un 24%</div>
+            </div>
+            <button class="tier-btn"
+              onclick="openHireModal('Social Media – Pack Semanal (3 Reels)', '$11.85 / reel (~$35.55/semana)', '3 Reels por semana · Ahorro del 24%')">
+              Contratar este plan →
+            </button>
+          </div>
+
+          <ul class="feature-list" style="margin-top:.5rem;">
+            <li>Formato 9:16 optimizado para redes</li>
+            <li>Transiciones y efectos modernos</li>
+            <li>Música tendencia / licenciada</li>
+            <li>Subtítulos animados</li>
+            <li>Entrega en 48–72 hrs</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- PAQUETE EVENTOS -->
+      <div class="service-card reveal">
+        <div class="card-header">
+          <svg class="card-icon-lucide" viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+          <h3 class="card-title">Cobertura de Eventos</h3>
+          <p class="card-subtitle">Filmación &amp; Post-producción</p>
+        </div>
+        <div class="card-body">
+
+          <div class="price-tier">
+            <div class="tier-info">
+              <div class="tier-name">Tarifa</div>
+              <!-- ✏️ PRECIO EVENTO -->
+              <div class="tier-price" style="font-size:1.4rem;">A negociar</div>
+              <div class="tier-includes">Cotización según tipo y duración del evento</div>
+            </div>
+            <button class="tier-btn"
+              onclick="openHireModal('Cobertura de Eventos', 'A negociar', 'Filmación 4K · Edición cinematográfica · Highlight reel')">
+              Solicitar cotización →
+            </button>
+          </div>
+
+          <ul class="feature-list" style="margin-top:.5rem;">
+            <li>Filmación en calidad 4K</li>
+            <li>Edición cinematográfica</li>
+            <li>Highlight reel para redes sociales</li>
+            <li>Entrega en formatos múltiples</li>
+            <li>Cobertura completa del evento</li>
+          </ul>
+
+        </div>
+      </div>
+
+    </div><!-- /services-grid -->
+  </section>
+
+  <!-- PORTFOLIO CAROUSEL -->
+  <section id="portfolio">
+    <p class="section-label reveal">Portafolio</p>
+    <h2 class="section-title reveal">Trabajos Recientes</h2>
+    <div class="section-divider reveal"></div>
+
+    <div class="carousel-wrapper reveal">
+      <div class="carousel-track-container">
+        <div class="carousel-track" id="carouselTrack">
+          <!-- ══ YOUTUBE ══════════════════════════════════════════ -->
+          <div class="carousel-slide" style="cursor:pointer;"
+               data-wizard data-type="video" data-src="videos/intro-yt.mp4"
+               data-label="Intro · 4K" data-badge="YouTube"
+               onclick="openWizard(0)">
+            <div class="slide-badge yt">
+              <svg viewBox="0 0 24 24" width="12" height="12"><path d="M22.54 6.42a2.78 2.78 0 00-1.95-1.97C18.88 4 12 4 12 4s-6.88 0-8.59.45A2.78 2.78 0 001.46 6.42 29 29 0 001 12a29 29 0 00.46 5.58 2.78 2.78 0 001.95 1.97C5.12 20 12 20 12 20s6.88 0 8.59-.45a2.78 2.78 0 001.95-1.97A29 29 0 0023 12a29 29 0 00-.46-5.58z" fill="currentColor" stroke="none"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="#000" stroke="none"/></svg>
+              YouTube
+            </div>
+            <video src="videos/intro-yt.mp4" muted loop playsinline preload="metadata"
+              style="width:100%;height:100%;object-fit:cover;pointer-events:none;"
+              onmouseenter="this.play()" onmouseleave="this.pause()"></video>
+            <div class="slide-overlay">
+              <i data-lucide="play-circle" style="width:28px;height:28px;stroke:#fff;fill:none;stroke-width:1.5;margin-right:8px;"></i>
+              <span class="slide-label">Intro · 4K</span>
+            </div>
+          </div>
+
+          <div class="carousel-slide" style="cursor:pointer;"
+               data-wizard data-type="video" data-src="videos/timeline-yt.mp4"
+               data-label="Timeline Edit · HD" data-badge="YouTube"
+               onclick="openWizard(1)">
+            <div class="slide-badge yt">
+              <svg viewBox="0 0 24 24" width="12" height="12"><path d="M22.54 6.42a2.78 2.78 0 00-1.95-1.97C18.88 4 12 4 12 4s-6.88 0-8.59.45A2.78 2.78 0 001.46 6.42 29 29 0 001 12a29 29 0 00.46 5.58 2.78 2.78 0 001.95 1.97C5.12 20 12 20 12 20s6.88 0 8.59-.45a2.78 2.78 0 001.95-1.97A29 29 0 0023 12a29 29 0 00-.46-5.58z" fill="currentColor" stroke="none"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="#000" stroke="none"/></svg>
+              YouTube
+            </div>
+            <video src="videos/timeline-yt.mp4" muted loop playsinline preload="metadata"
+              style="width:100%;height:100%;object-fit:cover;pointer-events:none;"
+              onmouseenter="this.play()" onmouseleave="this.pause()"></video>
+            <div class="slide-overlay">
+              <i data-lucide="play-circle" style="width:28px;height:28px;stroke:#fff;fill:none;stroke-width:1.5;margin-right:8px;"></i>
+              <span class="slide-label">Timeline Edit · HD</span>
+            </div>
+          </div>
+
+          <!-- ══ REELS ══════════════════════════════════════════ -->
+          <div class="carousel-slide" style="cursor:pointer;"
+               data-wizard data-type="video" data-src="videos/erp-reel.mp4"
+               data-label="ERP Free Promo" data-badge="Reel"
+               onclick="openWizard(2)">
+            <div class="slide-badge reel">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/></svg>
+              Reel
+            </div>
+            <video src="videos/erp-reel.mp4" muted loop playsinline preload="metadata"
+              style="width:100%;height:100%;object-fit:cover;pointer-events:none;"
+              onmouseenter="this.play()" onmouseleave="this.pause()"></video>
+            <div class="slide-overlay">
+              <i data-lucide="play-circle" style="width:28px;height:28px;stroke:#fff;fill:none;stroke-width:1.5;margin-right:8px;"></i>
+              <span class="slide-label">ERP Free Promo</span>
+            </div>
+          </div>
+
+          <div class="carousel-slide" style="cursor:pointer;"
+               data-wizard data-type="video" data-src="videos/qd2-reel.mp4"
+               data-label="Quick Drop 2" data-badge="Reel"
+               onclick="openWizard(3)">
+            <div class="slide-badge reel">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/></svg>
+              Reel
+            </div>
+            <video src="videos/qd2-reel.mp4" muted loop playsinline preload="metadata"
+              style="width:100%;height:100%;object-fit:cover;pointer-events:none;"
+              onmouseenter="this.play()" onmouseleave="this.pause()"></video>
+            <div class="slide-overlay">
+              <i data-lucide="play-circle" style="width:28px;height:28px;stroke:#fff;fill:none;stroke-width:1.5;margin-right:8px;"></i>
+              <span class="slide-label">Quick Drop 2</span>
+            </div>
+          </div>
+
+          <div class="carousel-slide" style="cursor:pointer;"
+               data-wizard data-type="video" data-src="videos/frases-reel.mp4"
+               data-label="Frases CLJ · 4K" data-badge="Reel"
+               onclick="openWizard(4)">
+            <div class="slide-badge reel">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/></svg>
+              Reel
+            </div>
+            <video src="videos/frases-reel.mp4" muted loop playsinline preload="metadata"
+              style="width:100%;height:100%;object-fit:cover;pointer-events:none;"
+              onmouseenter="this.play()" onmouseleave="this.pause()"></video>
+            <div class="slide-overlay">
+              <i data-lucide="play-circle" style="width:28px;height:28px;stroke:#fff;fill:none;stroke-width:1.5;margin-right:8px;"></i>
+              <span class="slide-label">Frases CLJ · 4K</span>
+            </div>
+          </div>
+
+          <div class="carousel-slide" style="cursor:pointer;"
+               data-wizard data-type="video" data-src="videos/qv1-reel.mp4"
+               data-label="Quick Video 1" data-badge="Reel"
+               onclick="openWizard(5)">
+            <div class="slide-badge reel">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/></svg>
+              Reel
+            </div>
+            <video src="videos/qv1-reel.mp4" muted loop playsinline preload="metadata"
+              style="width:100%;height:100%;object-fit:cover;pointer-events:none;"
+              onmouseenter="this.play()" onmouseleave="this.pause()"></video>
+            <div class="slide-overlay">
+              <i data-lucide="play-circle" style="width:28px;height:28px;stroke:#fff;fill:none;stroke-width:1.5;margin-right:8px;"></i>
+              <span class="slide-label">Quick Video 1</span>
+            </div>
+          </div>
+
+          <!-- ✏️ Aquí puedes agregar más slides cuando tengas las fotos listas:
+          <div class="carousel-slide" style="cursor:pointer;"
+               data-wizard data-type="image" data-src="images/maxx-foto2.jpg"
+               data-label="Cobertura de Evento" data-badge="BTS"
+               onclick="openWizard(6)">
+            <img src="images/maxx-foto2.jpg" loading="lazy" style="width:100%;height:100%;object-fit:cover;" />
+            <div class="slide-overlay"><span class="slide-label">Cobertura de Evento</span></div>
+          </div>
+          -->
+        </div>
+      </div>
+      <div class="carousel-nav">
+        <button class="carousel-btn" id="prevBtn">&#8592;</button>
+        <div class="carousel-dots" id="carouselDots"></div>
+        <button class="carousel-btn" id="nextBtn">&#8594;</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PARALLAX 2 -->
+  <div class="parallax-strip">
+    <div class="parallax-strip-bg" id="parallaxBg2" style="background-image:url('https://images.unsplash.com/photo-1536240478700-b869ad10025f?w=1600&q=80');"></div>
+    <div class="parallax-strip-content">
+      <blockquote class="reveal">"Calidad <em>cinematográfica</em> para contenido que conecta."</blockquote>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="contact-info reveal">
+      <p class="section-label">Contacto</p>
+      <h2 class="section-title">Trabajemos<br>Juntos</h2>
+      <div class="section-divider"></div>
+      <!-- ✏️ TEXTO -->
+      <p>¿Tienes un proyecto en mente? Escríbeme y hablemos sobre cómo llevar tu contenido al siguiente nivel.</p>
+      <div class="contact-links">
+        <a href="https://wa.me/18294567685" class="contact-link" target="_blank" rel="noopener">
+          <div class="contact-link-icon">
+            <i data-lucide="phone" class="lucide"></i>
+          </div>
+          <span>+1 (829) 456-7685 · WhatsApp</span>
+        </a>
+        <a href="mailto:maxwlfps@gmail.com" class="contact-link">
+          <div class="contact-link-icon">
+            <i data-lucide="mail" class="lucide"></i>
+          </div>
+          <span>maxwlfps@gmail.com</span>
+        </a>
+        <a href="https://instagram.com/maxx.fps" class="contact-link" target="_blank" rel="noopener">
+          <div class="contact-link-icon">
+            <i data-lucide="instagram" class="lucide"></i>
+          </div>
+          <span>@maxx.fps</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Formulario general de contacto -->
+    <!--
+    ✏️ CONECTAR FORMULARIO DE CONTACTO:
+    Cambia la acción a: action="https://formsubmit.co/TU@EMAIL.COM"
+    y agrega method="POST" para recibir mensajes directamente.
+    -->
+    <form class="contact-form reveal" onsubmit="handleContactSubmit(event)">
+      <div class="form-row">
+        <div class="form-group"><label>Nombre</label><input type="text" placeholder="Tu nombre" required /></div>
+        <div class="form-group"><label>Email</label><input type="email" placeholder="tu@email.com" required /></div>
+      </div>
+      <div class="form-group">
+        <label>Servicio de interés</label>
+        <select>
+          <option value="" disabled selected>Selecciona un servicio</option>
+          <option>Youtuber – Plan Despegue ($80/mes)</option>
+          <option>Youtuber – Plan Pro ($120/mes)</option>
+          <option>Social Media – Reel Individual ($15.59)</option>
+          <option>Social Media – Pack Semanal ($11.85/reel)</option>
+          <option>Cobertura de Eventos (Cotizar)</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Mensaje</label><textarea placeholder="Cuéntame sobre tu proyecto..."></textarea></div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Enviar Mensaje</button>
+      <p id="contact-success" style="display:none;color:var(--red);text-align:center;font-size:.85rem;">¡Mensaje enviado! Te contactaré pronto.</p>
+    </form>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <!-- Logo en footer — mismo archivo, más grande -->
+    <img src="images/logow.png" alt="Maxx FPS"
+         style="height:100px;width:auto;object-fit:contain;"
+         onerror="this.style.display='none';" />
+    <div class="footer-logo">MAXX <span>FPS</span></div>
+    <p class="footer-tagline">Filmmaker · Editor · Diseñador Gráfico</p>
+    <ul class="footer-links">
+      <li><a href="#about">Sobre Mí</a></li>
+      <li><a href="#services">Servicios</a></li>
+      <li><a href="#portfolio">Portafolio</a></li>
+      <li><a href="#contact">Contacto</a></li>
+    </ul>
+    <div style="display:flex;gap:1.5rem;align-items:center;justify-content:center;">
+      <a href="https://wa.me/18294567685" target="_blank" rel="noopener" style="color:var(--mid);transition:color .3s;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--mid)'">
+        <i data-lucide="phone" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;"></i>
+      </a>
+      <a href="mailto:maxwlfps@gmail.com" style="color:var(--mid);transition:color .3s;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--mid)'">
+        <i data-lucide="mail" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;"></i>
+      </a>
+      <a href="https://instagram.com/maxx.fps" target="_blank" rel="noopener" style="color:var(--mid);transition:color .3s;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--mid)'">
+        <i data-lucide="instagram" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;"></i>
+      </a>
+    </div>
+    <p class="footer-copy">© 2026 <span>Maxx FPS</span>. Todos los derechos reservados.</p>
+  </footer>
+
+  <!-- LIGHTBOX simple (fallback) -->
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <span class="lightbox-close">&times;</span>
+    <div class="lightbox-inner"><img id="lightboxImg" src="" alt="" /></div>
+  </div>
+
+  <!-- ============================================================
+       WIZARD LIGHTBOX — preview de videos e imágenes con navegación
+  ============================================================ -->
+  <div id="wizard" onclick="handleWizardBgClick(event)">
+
+    <!-- Header -->
+    <div class="wizard-header">
+      <div class="wizard-meta">
+        <span class="wizard-badge" id="wizardBadge">YouTube</span>
+        <span id="wizardTitle">Título</span>
+      </div>
+      <span id="wizardCounter">1 / 11</span>
+      <button class="wizard-close-btn" onclick="closeWizard()" aria-label="Cerrar">✕</button>
+    </div>
+
+    <!-- Stage: prev · media · next -->
+    <div class="wizard-stage">
+      <button class="wizard-nav-btn" onclick="wizardNav(-1)" aria-label="Anterior">&#8592;</button>
+      <div id="wizardMedia"></div>
+      <button class="wizard-nav-btn" onclick="wizardNav(1)" aria-label="Siguiente">&#8594;</button>
+    </div>
+
+    <!-- Dots -->
+    <div class="wizard-footer">
+      <div id="wizardDots" style="display:flex;gap:6px;"></div>
+    </div>
+
+  </div>
+
+  <!-- ============================================================
+       HIRE MODAL (formulario de contratación)
+  ============================================================ -->
+  <div class="modal-overlay" id="hireModal" onclick="handleModalOverlayClick(event)">
+    <div class="modal" role="dialog" aria-modal="true">
+
+      <!-- Header con info del plan seleccionado -->
+      <div class="modal-header">
+        <div>
+          <div class="modal-plan-tag" id="modalPlanTag">Plan Seleccionado</div>
+          <div class="modal-title" id="modalPlanName">Nombre del Plan</div>
+          <div class="modal-subtitle" id="modalPlanPrice">Precio · Descripción</div>
+        </div>
+        <button class="modal-close" onclick="closeHireModal()" aria-label="Cerrar">✕</button>
+      </div>
+
+      <!-- Formulario principal -->
+      <!--
+      ============================================================
+      ✏️ CONFIGURAR CORREOS AUTOMÁTICOS (FormSubmit.co – GRATIS):
+
+      1. Cambia la etiqueta <form> más abajo:
+         action="https://formsubmit.co/TU@EMAIL.COM"
+         method="POST"
+         Y ELIMINA el onsubmit="handleHireSubmit(event)"
+
+      2. Agrega estos campos ocultos dentro del <form>:
+         <input type="hidden" name="_subject" value="🎬 Nueva contratación – Maxx FPS">
+         <input type="hidden" name="_autoresponse" value="¡Hola! Gracias por contactar a Maxx FPS. He recibido tu solicitud y me estaré comunicando contigo a la brevedad. ¡Pronto trabajaremos juntos! — Maxx FPS">
+         <input type="hidden" name="_template" value="table">
+         <input type="hidden" name="_next" value="URL_GRACIAS_O_DEJA_EN_BLANCO">
+         <input type="hidden" name="_captcha" value="false">
+
+      3. La primera vez que alguien envíe el formulario, FormSubmit.co
+         te enviará un email de verificación a TU@EMAIL.COM para activarlo.
+      ============================================================
+      -->
+      <form class="modal-body" id="hireForm" onsubmit="handleHireSubmit(event)" novalidate>
+
+        <!-- Campo oculto: plan seleccionado -->
+        <input type="hidden" id="hiddenPlan" name="plan_contratado" value="">
+
+        <!-- SECCIÓN 1: DATOS PERSONALES -->
+        <div class="modal-section-label">Datos Personales</div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="hireNombre">Nombre *</label>
+            <input type="text" id="hireNombre" name="nombre" placeholder="Tu nombre" required />
+          </div>
+          <div class="form-group">
+            <label for="hireApellidos">Apellidos *</label>
+            <input type="text" id="hireApellidos" name="apellidos" placeholder="Tus apellidos" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="hireEmail">Correo electrónico *</label>
+            <input type="email" id="hireEmail" name="email" placeholder="tu@email.com" required />
+          </div>
+          <div class="form-group">
+            <label for="hireTelefono">Teléfono / WhatsApp *</label>
+            <input type="tel" id="hireTelefono" name="telefono" placeholder="+1 (555) 000-0000" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="hirePais">País de origen *</label>
+          <select id="hirePais" name="pais" required>
+            <option value="" disabled selected>Selecciona tu país</option>
+            <option>Argentina</option>
+            <option>Bolivia</option>
+            <option>Chile</option>
+            <option>Colombia</option>
+            <option>Costa Rica</option>
+            <option>Cuba</option>
+            <option>Ecuador</option>
+            <option>El Salvador</option>
+            <option>España</option>
+            <option>Estados Unidos</option>
+            <option>Guatemala</option>
+            <option>Honduras</option>
+            <option>México</option>
+            <option>Nicaragua</option>
+            <option>Panamá</option>
+            <option>Paraguay</option>
+            <option>Perú</option>
+            <option>Puerto Rico</option>
+            <option>República Dominicana</option>
+            <option>Uruguay</option>
+            <option>Venezuela</option>
+            <option>Otro</option>
+          </select>
+        </div>
+
+        <!-- SECCIÓN 2: REDES SOCIALES -->
+        <div class="modal-section-label">Redes Sociales &amp; Links</div>
+        <p style="font-size:.78rem;color:var(--light);margin-top:-.5rem;">Completa las que tengas activas. Esto nos ayuda a entender tu presencia digital.</p>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="hireYouTube">YouTube</label>
+            <input type="url" id="hireYouTube" name="youtube" placeholder="https://youtube.com/@tucanal" />
+          </div>
+          <div class="form-group">
+            <label for="hireInstagram">Instagram</label>
+            <input type="text" id="hireInstagram" name="instagram" placeholder="@tu_usuario" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="hireTikTok">TikTok</label>
+            <input type="text" id="hireTikTok" name="tiktok" placeholder="@tu_usuario" />
+          </div>
+          <div class="form-group">
+            <label for="hireFacebook">Facebook</label>
+            <input type="url" id="hireFacebook" name="facebook" placeholder="https://facebook.com/tupagina" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="hireWebsite">Sitio web / Otro link</label>
+          <input type="url" id="hireWebsite" name="website" placeholder="https://tuweb.com" />
+        </div>
+
+        <!-- SECCIÓN 3: PROYECTO -->
+        <div class="modal-section-label">Información del Proyecto</div>
+
+        <div class="form-group">
+          <label for="hireDescripcion">Describe tu proyecto *</label>
+          <textarea id="hireDescripcion" name="descripcion_proyecto" rows="4"
+            placeholder="¿De qué trata tu canal o marca? ¿Qué tipo de contenido produces? ¿Tienes material grabado o necesitas producción desde cero?..."
+            required></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="hireInicio">¿Cuándo quieres iniciar?</label>
+            <select id="hireInicio" name="inicio">
+              <option value="" disabled selected>Selecciona</option>
+              <option>Inmediatamente</option>
+              <option>En 1–2 semanas</option>
+              <option>En 1 mes</option>
+              <option>Más de 1 mes</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="hireFrec">Frecuencia de publicación</label>
+            <select id="hireFrec" name="frecuencia">
+              <option value="" disabled selected>Selecciona</option>
+              <option>1 vez por semana</option>
+              <option>2–3 veces por semana</option>
+              <option>Diario</option>
+              <option>Según el paquete</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 4: MÉTODO DE PAGO -->
+        <div class="modal-section-label">Método de Pago</div>
+
+        <div class="payment-box">
+          <div class="payment-icon">💳</div>
+          <div class="payment-info">
+            <strong>PayPal</strong>
+            <span>Una vez recibida tu solicitud, te enviaré el link de pago de PayPal al correo que nos facilites. Contáctame también por WhatsApp o Instagram.</span><br>
+            <span class="paypal-id">maxwlfps@gmail.com · @maxx.fps</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="hirePaypalEmail">Tu correo de PayPal (opcional)</label>
+          <input type="email" id="hirePaypalEmail" name="paypal_email" placeholder="tu_paypal@email.com" />
+        </div>
+
+        <div class="form-group">
+          <label for="hireNotas">Notas adicionales</label>
+          <textarea id="hireNotas" name="notas" rows="3" placeholder="Cualquier otra información relevante para tu proyecto..."></textarea>
+        </div>
+
+        <!-- SUBMIT -->
+        <div class="modal-submit-area">
+          <button type="submit" class="modal-submit-btn" id="hireSubmitBtn">
+            Enviar solicitud de contratación
+          </button>
+          <p class="modal-privacy">
+            Al enviar, recibirás un correo de confirmación con los detalles de tu solicitud.<br>
+            Tu información se usa únicamente para gestionar tu contratación.
+          </p>
+        </div>
+      </form>
+
+      <!-- Pantalla de éxito (se muestra después de enviar) -->
+      <div class="modal-success" id="hireSuccess">
+        <div class="success-icon">🎬</div>
+        <div class="success-title">¡Solicitud Enviada!</div>
+        <p class="success-msg">
+          Gracias por contratar los servicios de <strong>Maxx FPS</strong>.<br>
+          Revisa tu correo — te he enviado una confirmación con los detalles de tu plan.<br>
+          Me estaré comunicando contigo a la brevedad. ¡Pronto trabajaremos juntos!
+        </p>
+        <button class="success-close-btn" onclick="closeHireModal()">Cerrar</button>
+      </div>
+
+    </div><!-- /modal -->
+  </div><!-- /modal-overlay -->
+
+  <!-- ============================================================
+       JAVASCRIPT
+  ============================================================ -->
+  <script>
+    /* ---- HAMBURGER ---- */
+    const hamburger = document.getElementById('hamburger');
+    const navLinks  = document.getElementById('navLinks');
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('open');
+      navLinks.classList.toggle('open');
+    });
+    navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+      hamburger.classList.remove('open');
+      navLinks.classList.remove('open');
+    }));
+
+    /* ---- REVEAL ---- */
+    const observer = new IntersectionObserver(
+      entries => entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+      }),
+      { threshold: 0.12, rootMargin: '0px 0px -60px 0px' }
+    );
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    /* ---- PARALLAX ---- */
+    function parallaxUpdate() {
+      [['parallaxBg','.parallax-strip:first-of-type'],['parallaxBg2','.parallax-strip:last-of-type']]
+        .forEach(([id, sel]) => {
+          const bg = document.getElementById(id);
+          const section = document.querySelector(sel);
+          if (!bg || !section) return;
+          const rect = section.getBoundingClientRect();
+          const prog = (rect.top + rect.height) / (window.innerHeight + rect.height);
+          bg.style.transform = `translateY(${(prog - 0.5) * 80}px)`;
+        });
+    }
+    window.addEventListener('scroll', parallaxUpdate, { passive: true });
+    parallaxUpdate();
+
+    /* ---- PARTICLES ---- */
+    (function () {
+      const canvas = document.getElementById('particles-canvas');
+      const ctx = canvas.getContext('2d');
+      let W, H, particles;
+      function resize() { W = canvas.width = canvas.offsetWidth; H = canvas.height = canvas.offsetHeight; }
+      function rand(a, b) { return Math.random() * (b - a) + a; }
+      function make() {
+        return Array.from({ length: 120 }, () => ({
+          x: rand(0, W), y: rand(0, H),
+          vx: rand(-.3, .3), vy: rand(-.5, -.1),
+          r: rand(.5, 2.5), a: rand(.1, .6),
+          color: Math.random() > .7 ? 'rgba(230,0,0,' : 'rgba(255,255,255,'
+        }));
+      }
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+        particles.forEach(p => {
+          p.x += p.vx; p.y += p.vy;
+          if (p.y < -5) { p.y = H + 5; p.x = rand(0, W); }
+          if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = p.color + p.a + ')';
+          ctx.fill();
+        });
+        requestAnimationFrame(draw);
+      }
+      resize(); particles = make(); draw();
+      window.addEventListener('resize', () => { resize(); particles = make(); });
+    })();
+
+    /* ---- CAROUSEL ---- */
+    (function () {
+      const track = document.getElementById('carouselTrack');
+      const slides = [...track.querySelectorAll('.carousel-slide')];
+      const dotsC = document.getElementById('carouselDots');
+      let current = 0;
+      function spv() { return window.innerWidth < 700 ? 1 : window.innerWidth < 1000 ? 2 : 3; }
+      const maxIdx = () => Math.max(0, slides.length - spv());
+      for (let i = 0; i <= maxIdx(); i++) {
+        const d = document.createElement('button');
+        d.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+        d.addEventListener('click', () => goTo(i));
+        dotsC.appendChild(d);
+      }
+      function goTo(idx) {
+        current = Math.max(0, Math.min(idx, maxIdx()));
+        const w = slides[0].offsetWidth + 24;
+        track.style.transform = `translateX(-${current * w}px)`;
+        dotsC.querySelectorAll('.carousel-dot').forEach((d, i) => d.classList.toggle('active', i === current));
+      }
+      document.getElementById('prevBtn').addEventListener('click', () => goTo(current - 1));
+      document.getElementById('nextBtn').addEventListener('click', () => goTo(current + 1));
+      let sx = 0;
+      track.addEventListener('touchstart', e => { sx = e.touches[0].clientX; });
+      track.addEventListener('touchend',   e => { const d = sx - e.changedTouches[0].clientX; if (Math.abs(d) > 50) goTo(d > 0 ? current + 1 : current - 1); });
+      window.addEventListener('resize', () => goTo(Math.min(current, maxIdx())));
+    })();
+
+    /* ---- LIGHTBOX ---- */
+    function openLightbox(src) { document.getElementById('lightboxImg').src = src; document.getElementById('lightbox').classList.add('open'); }
+    function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeLightbox(); closeHireModal(); } });
+
+    /* ---- HIRE MODAL ---- */
+    function openHireModal(planName, planPrice, planDesc) {
+      document.getElementById('modalPlanTag').textContent   = '📋 Plan Seleccionado';
+      document.getElementById('modalPlanName').textContent  = planName;
+      document.getElementById('modalPlanPrice').textContent = planPrice + ' — ' + planDesc;
+      document.getElementById('hiddenPlan').value = planName + ' (' + planPrice + ')';
+      // Reset form and success screen
+      document.getElementById('hireForm').style.display    = 'flex';
+      document.getElementById('hireSuccess').classList.remove('show');
+      document.getElementById('hireForm').reset();
+      document.getElementById('hiddenPlan').value = planName + ' (' + planPrice + ')';
+      document.getElementById('hireSubmitBtn').disabled = false;
+      document.getElementById('hireSubmitBtn').textContent = 'Enviar solicitud de contratación';
+      // Open overlay
+      const overlay = document.getElementById('hireModal');
+      overlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      // Scroll modal to top
+      overlay.querySelector('.modal').scrollTop = 0;
+    }
+
+    function closeHireModal() {
+      document.getElementById('hireModal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function handleModalOverlayClick(e) {
+      if (e.target === document.getElementById('hireModal')) closeHireModal();
+    }
+
+    /* ============================================================
+       ENVÍO DEL FORMULARIO DE CONTRATACIÓN
+       ============================================================
+       OPCIÓN A (recomendada para GitHub Pages — sin backend):
+       -------------------------------------------------------
+       1. Registra tu email en https://formsubmit.co
+       2. En la etiqueta <form id="hireForm">, cambia:
+            onsubmit="handleHireSubmit(event)"
+          por:
+            action="https://formsubmit.co/TU@EMAIL.COM"
+            method="POST"
+       3. Agrega DENTRO del form estos inputs ocultos:
+            <input type="hidden" name="_subject" value="🎬 Nueva contratación – Maxx FPS">
+            <input type="hidden" name="_autoresponse"
+              value="¡Hola! Gracias por confiar en Maxx FPS. Tu solicitud ha sido recibida. Estaré comunicándome contigo a la brevedad. — Maxx FPS">
+            <input type="hidden" name="_template" value="table">
+            <input type="hidden" name="_captcha" value="false">
+       4. Elimina el onsubmit y esta función handleHireSubmit.
+
+       OPCIÓN B (EmailJS — más control, gratis hasta 200 emails/mes):
+       -------------------------------------------------------
+       Sigue la guía en https://www.emailjs.com/docs/
+       y reemplaza la lógica dentro de handleHireSubmit.
+    ============================================================ */
+    function handleHireSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      if (!form.checkValidity()) { form.reportValidity(); return; }
+
+      const btn = document.getElementById('hireSubmitBtn');
+      btn.disabled = true;
+      btn.textContent = 'Enviando...';
+
+      // Simulación de envío (3 s) — reemplaza con lógica real de FormSubmit o EmailJS
+      setTimeout(() => {
+        form.style.display = 'none';
+        document.getElementById('hireSuccess').classList.add('show');
+      }, 1800);
+
+      /*
+      // ── EJEMPLO con EmailJS (descomenta cuando tengas tu cuenta) ──
+      emailjs.send('TU_SERVICE_ID', 'TU_TEMPLATE_ID', {
+        plan:         document.getElementById('hiddenPlan').value,
+        nombre:       document.getElementById('hireNombre').value,
+        apellidos:    document.getElementById('hireApellidos').value,
+        email:        document.getElementById('hireEmail').value,
+        telefono:     document.getElementById('hireTelefono').value,
+        pais:         document.getElementById('hirePais').value,
+        youtube:      document.getElementById('hireYouTube').value,
+        instagram:    document.getElementById('hireInstagram').value,
+        tiktok:       document.getElementById('hireTikTok').value,
+        facebook:     document.getElementById('hireFacebook').value,
+        website:      document.getElementById('hireWebsite').value,
+        descripcion:  document.getElementById('hireDescripcion').value,
+        inicio:       document.getElementById('hireInicio').value,
+        frecuencia:   document.getElementById('hireFrec').value,
+        paypal_email: document.getElementById('hirePaypalEmail').value,
+        notas:        document.getElementById('hireNotas').value,
+      }, 'TU_PUBLIC_KEY')
+      .then(() => {
+        form.style.display = 'none';
+        document.getElementById('hireSuccess').classList.add('show');
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.textContent = 'Enviar solicitud de contratación';
+        alert('Hubo un error. Intenta nuevamente o contáctame directamente.');
+        console.error(err);
+      });
+      */
+    }
+
+    /* ---- CONTACT FORM ---- */
+    function handleContactSubmit(e) {
+      e.preventDefault();
+      document.getElementById('contact-success').style.display = 'block';
+      setTimeout(() => document.getElementById('contact-success').style.display = 'none', 4000);
+    }
+
+    /* ---- LUCIDE ICONS ---- */
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+
+    /* ================================================================
+       WIZARD LIGHTBOX — abre videos e imágenes con navegación prev/next
+    ================================================================ */
+    const wizardItems = [];
+    let wizardIndex = 0;
+
+    function buildWizardItems() {
+      // Recopila todos los slides del carrusel en orden
+      document.querySelectorAll('.carousel-slide[data-wizard]').forEach(slide => {
+        wizardItems.push({
+          type:  slide.dataset.type,   // 'video' | 'image'
+          src:   slide.dataset.src,
+          label: slide.dataset.label,
+          badge: slide.dataset.badge
+        });
+      });
+    }
+
+    function openWizard(index) {
+      if (!wizardItems.length) buildWizardItems();
+      wizardIndex = ((index % wizardItems.length) + wizardItems.length) % wizardItems.length;
+      renderWizard();
+      document.getElementById('wizard').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeWizard() {
+      const w = document.getElementById('wizard');
+      // pause any playing video
+      const vid = w.querySelector('video');
+      if (vid) { vid.pause(); vid.src = ''; }
+      w.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function wizardNav(dir) {
+      // pause current video before switching
+      const vid = document.getElementById('wizard').querySelector('video');
+      if (vid) { vid.pause(); vid.src = ''; }
+      wizardIndex = ((wizardIndex + dir) % wizardItems.length + wizardItems.length) % wizardItems.length;
+      renderWizard();
+    }
+
+    function renderWizard() {
+      const item = wizardItems[wizardIndex];
+      const media = document.getElementById('wizardMedia');
+      const title = document.getElementById('wizardTitle');
+      const badge = document.getElementById('wizardBadge');
+      const counter = document.getElementById('wizardCounter');
+
+      // badge
+      badge.textContent = item.badge;
+      badge.className = 'wizard-badge ' + (item.badge === 'YouTube' ? 'yt' : item.badge === 'Reel' ? 'reel' : 'bts');
+
+      title.textContent = item.label;
+      counter.textContent = (wizardIndex + 1) + ' / ' + wizardItems.length;
+
+      // dots
+      document.querySelectorAll('.wizard-dot').forEach((d, i) => d.classList.toggle('active', i === wizardIndex));
+
+      // media
+      if (item.type === 'video') {
+        media.innerHTML = `
+          <video src="${item.src}" controls autoplay playsinline
+            style="max-width:100%;max-height:72vh;border-radius:4px;background:#000;display:block;margin:auto;">
+          </video>`;
+      } else {
+        media.innerHTML = `
+          <img src="${item.src}" alt="${item.label}"
+            style="max-width:100%;max-height:72vh;border-radius:4px;object-fit:contain;display:block;margin:auto;cursor:zoom-in;"
+            onclick="this.style.maxHeight=this.style.maxHeight==='none'?'72vh':'none'"/>`;
+      }
+
+      // rebuild dots if needed
+      const dotsEl = document.getElementById('wizardDots');
+      if (dotsEl.children.length !== wizardItems.length) {
+        dotsEl.innerHTML = '';
+        wizardItems.forEach((_, i) => {
+          const d = document.createElement('button');
+          d.className = 'wizard-dot' + (i === wizardIndex ? ' active' : '');
+          d.onclick = () => { const vid2 = document.getElementById('wizard').querySelector('video'); if(vid2){vid2.pause();vid2.src='';} wizardIndex=i; renderWizard(); };
+          dotsEl.appendChild(d);
+        });
+      }
+    }
+
+    function handleWizardBgClick(e) {
+      if (e.target === document.getElementById('wizard')) closeWizard();
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', e => {
+      const w = document.getElementById('wizard');
+      if (!w.classList.contains('open')) return;
+      if (e.key === 'Escape')     closeWizard();
+      if (e.key === 'ArrowRight') wizardNav(1);
+      if (e.key === 'ArrowLeft')  wizardNav(-1);
+    });
+  </script>
+</body>
+</html>
